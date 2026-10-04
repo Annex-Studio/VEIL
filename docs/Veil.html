@@ -989,13 +989,35 @@ function chatterToPacked(raw) {
  * trigger canvas premultiply/unpremultiply rounding and corrupt RGB bits.
  * ---------------------------------------------------------------- */
 
+const STEGO_MAGIC = [0x53, 0x54, 0x45, 0x47]; // "STEG"
+const STEGO_HEADER_BYTES = 9;
+const STEGO_FLATTEN_BG = [247, 248, 243]; // landing-page background, used only behind transparent cover pixels
+
+function flattenImageDataToOpaque(imageData) {
+  const px = imageData.data;
+  for (let i = 0; i < px.length; i += 4) {
+    const alpha = px[i + 3];
+    if (alpha === 255) continue;
+    const inv = 255 - alpha;
+    px[i] = Math.round((px[i] * alpha + STEGO_FLATTEN_BG[0] * inv) / 255);
+    px[i + 1] = Math.round((px[i + 1] * alpha + STEGO_FLATTEN_BG[1] * inv) / 255);
+    px[i + 2] = Math.round((px[i + 2] * alpha + STEGO_FLATTEN_BG[2] * inv) / 255);
+    px[i + 3] = 255;
+  }
+  return imageData;
+}
+
 function stegoTotalCapacityBytes(imageData) {
   const pixelCount = imageData.data.length / 4;
   return Math.floor((pixelCount * 3) / 8);
 }
 
 function stegoCapacityBytes(imageData) {
-  return Math.max(0, stegoTotalCapacityBytes(imageData) - 9); // minus header
+  return Math.max(0, stegoTotalCapacityBytes(imageData) - STEGO_HEADER_BYTES);
+}
+
+function stegoLegacyTotalCapacityBytes(imageData) {
+  return Math.floor(imageData.data.length / 8);
 }
 
 function writeBitsIntoImage(imageData, bytes) {
@@ -1026,6 +1048,49 @@ function readBitsFromImage(imageData, byteCount) {
     bitIndex++;
   }
   return out;
+}
+
+function readBitsFromImageLegacyRgba(imageData, byteCount) {
+  if (byteCount > stegoLegacyTotalCapacityBytes(imageData)) {
+    throw new Error("requested payload is larger than legacy image capacity");
+  }
+  const out = new Uint8Array(byteCount);
+  const px = imageData.data;
+  const totalBits = byteCount * 8;
+  for (let i = 0; i < totalBits; i++) {
+    const bit = px[i] & 1;
+    out[i >> 3] |= bit << (7 - (i & 7));
+  }
+  return out;
+}
+
+function isStegoHeader(header) {
+  return header[0] === STEGO_MAGIC[0] &&
+    header[1] === STEGO_MAGIC[1] &&
+    header[2] === STEGO_MAGIC[2] &&
+    header[3] === STEGO_MAGIC[3];
+}
+
+function readStegoHeader(imageData) {
+  const attempts = [
+    {
+      name: "rgb",
+      capacity: stegoTotalCapacityBytes(imageData),
+      read: count => readBitsFromImage(imageData, count)
+    },
+    {
+      name: "legacy-rgba",
+      capacity: stegoLegacyTotalCapacityBytes(imageData),
+      read: count => readBitsFromImageLegacyRgba(imageData, count)
+    }
+  ];
+
+  for (const attempt of attempts) {
+    if (attempt.capacity < STEGO_HEADER_BYTES) continue;
+    const header = attempt.read(STEGO_HEADER_BYTES);
+    if (isStegoHeader(header)) return { ...attempt, header };
+  }
+  return null;
 }
 
 /* ---------------------------------------------------------------- *
@@ -1249,7 +1314,8 @@ wireDropzone("coverDrop", "cover", async file => {
     canvas.width = img.width; canvas.height = img.height;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(img, 0, 0);
-    coverImageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    coverImageData = flattenImageDataToOpaque(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.putImageData(coverImageData, 0, 0);
     const preview = document.getElementById("coverPreview");
     preview.src = canvas.toDataURL("image/png");
     preview.style.display = "block";
@@ -1299,7 +1365,8 @@ function upscaleCoverToFit(neededBytes) {
   canvas.width = newW; canvas.height = newH;
   const ctx = canvas.getContext("2d");
   ctx.drawImage(coverImageEl, 0, 0, newW, newH);
-  coverImageData = ctx.getImageData(0, 0, newW, newH);
+  coverImageData = flattenImageDataToOpaque(ctx.getImageData(0, 0, newW, newH));
+  ctx.putImageData(coverImageData, 0, 0);
 
   const preview = document.getElementById("coverPreview");
   preview.src = canvas.toDataURL("image/png");
@@ -1333,8 +1400,8 @@ async function stegoHide() {
   setStatus("hideStatus", "Encrypting and embedding…");
   try {
     const packed = await encryptBytes(payload, pass);
-    const header = new Uint8Array(9);
-    header.set([0x53, 0x54, 0x45, 0x47], 0); // "STEG"
+    const header = new Uint8Array(STEGO_HEADER_BYTES);
+    header.set(STEGO_MAGIC, 0);
     header[4] = kind;
     new DataView(header.buffer).setUint32(5, packed.length, false);
     const full = concatBytes(header, packed);
