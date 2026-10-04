@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Veil is a privacy tool for encrypted messages and steganography.">
+<title>Veil | Confidential Messages in Plain Sight</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f8f3;
+    --surface: #ffffff;
+    --surface-2: #eef3ef;
+    --ink: #101917;
+    --muted: #53615d;
+    --line: #d7ded9;
+    --mint: #35a783;
+    --mint-dark: #14735c;
+    --amber: #d88b32;
+    --blue: #5177ba;
+    --plum: #7a5aa6;
+    --danger: #a83f3a;
+    --shadow: 0 20px 50px rgba(20, 40, 36, 0.12);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+    --serif: Charter, "Iowan Old Style", Georgia, serif;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e1413;
+    --surface: #151d1b;
+    --surface-2: #1d2926;
+    --ink: #edf5ef;
+    --muted: #a8b7b0;
+    --line: #2d3c38;
+    --mint: #75dbb5;
+    --mint-dark: #4db996;
+    --amber: #f0b56a;
+    --blue: #91abe4;
+    --plum: #c2a6ec;
+    --danger: #ef8a81;
+    --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 84px;
+  }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+  }
+
+  a { color: inherit; }
+
+  .skip {
+    position: absolute;
+    left: 16px;
+    top: -48px;
+    z-index: 5;
+    padding: 10px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+
+  .skip:focus { top: 16px; }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    border-bottom: 1px solid color-mix(in srgb, var(--line) 84%, transparent);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(18px);
+  }
+
+  .nav {
+    width: min(1160px, calc(100% - 40px));
+    min-height: 72px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 650;
+  }
+
+  .brand img {
+    width: 78px;
+    height: auto;
+    display: block;
+  }
+
+  .navlinks {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .navlinks a,
+  .theme-toggle {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 0 12px;
+    color: var(--muted);
+    background: transparent;
+    font: 600 13px/1 var(--mono);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .navlinks a:hover,
+  .theme-toggle:hover {
+    color: var(--ink);
+    border-color: var(--line);
+    background: var(--surface);
+  }
+
+  .button {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0 16px;
+    font: 700 13px/1 var(--mono);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .button.primary {
+    border-color: var(--mint);
+    background: var(--mint);
+    color: #071411;
+  }
+
+  .button.secondary {
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    color: var(--ink);
+  }
+
+  .hero {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    min-height: clamp(600px, calc(100svh - 112px), 760px);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+
+  #veilField {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background: #0d1714;
+  }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      linear-gradient(90deg, color-mix(in srgb, var(--bg) 96%, transparent) 0%, color-mix(in srgb, var(--bg) 86%, transparent) 46%, color-mix(in srgb, var(--bg) 30%, transparent) 100%),
+      linear-gradient(180deg, transparent 0%, var(--bg) 100%);
+  }
+
+  .hero-inner {
+    width: min(1160px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: clamp(58px, 9vw, 116px) 0 46px;
+    display: grid;
+    grid-template-columns: minmax(0, 680px) minmax(280px, 1fr);
+    gap: 48px;
+    align-items: center;
+  }
+
+  .eyebrow {
+    width: fit-content;
+    margin: 0 0 18px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 7px 11px;
+    background: color-mix(in srgb, var(--surface) 74%, transparent);
+    color: var(--muted);
+    font: 700 12px/1 var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    line-height: 1.05;
+    letter-spacing: 0;
+  }
+
+  h1 {
+    max-width: 8ch;
+    font-family: var(--serif);
+    font-size: clamp(76px, 13vw, 176px);
+    font-weight: 650;
+  }
+
+  .hero-copy {
+    max-width: 670px;
+    margin: 24px 0 0;
+    color: var(--muted);
+    font-size: clamp(18px, 2vw, 22px);
+  }
+
+  .hero-actions {
+    margin-top: 32px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .terminal {
+    align-self: stretch;
+    min-height: 430px;
+    border: 1px solid color-mix(in srgb, var(--line) 72%, transparent);
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--surface) 86%, transparent);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .terminal-head {
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--line);
+    padding: 0 14px;
+    color: var(--muted);
+    font: 700 12px/1 var(--mono);
+  }
+
+  .lights {
+    display: flex;
+    gap: 7px;
+  }
+
+  .lights span {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+  }
+
+  .lights span:nth-child(1) { background: var(--danger); }
+  .lights span:nth-child(2) { background: var(--amber); }
+  .lights span:nth-child(3) { background: var(--mint); }
+
+  .terminal-body {
+    padding: 22px;
+    font: 13px/1.65 var(--mono);
+  }
+
+  .trace {
+    margin: 0;
+    white-space: pre-wrap;
+    color: var(--muted);
+  }
+
+  .trace strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .trace .mint { color: var(--mint-dark); }
+  .trace .amber { color: var(--amber); }
+  .trace .blue { color: var(--blue); }
+  .trace .plum { color: var(--plum); }
+
+  main > section:not(.hero) {
+    width: min(1160px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 74px 0;
+  }
+
+  .section-head {
+    max-width: 720px;
+    margin-bottom: 30px;
+  }
+
+  .section-head p {
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: 18px;
+  }
+
+  h2 {
+    font-family: var(--serif);
+    font-size: clamp(34px, 5vw, 64px);
+    font-weight: 640;
+  }
+
+  h3 {
+    font-family: var(--serif);
+    font-size: 25px;
+    font-weight: 640;
+  }
+
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .mode-card,
+  .proof-item {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--surface);
+    box-shadow: 0 10px 26px rgba(20, 40, 36, 0.06);
+  }
+
+  .mode-card {
+    padding: 22px;
+  }
+
+  .mode-card p {
+    margin: 14px 0 0;
+    color: var(--muted);
+  }
+
+  .mode-mark {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 22px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    color: #081311;
+    font: 800 17px/1 var(--mono);
+  }
+
+  .mode-card:nth-child(1) .mode-mark { background: var(--mint); }
+  .mode-card:nth-child(2) .mode-mark { background: var(--amber); }
+  .mode-card:nth-child(3) .mode-mark { background: var(--plum); color: #fff; }
+
+  .proof {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: 24px;
+    align-items: center;
+  }
+
+  .identity {
+    min-height: 300px;
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--surface-2) 76%, transparent), var(--surface)),
+      var(--surface);
+  }
+
+  .identity img {
+    width: min(78%, 420px);
+    height: auto;
+    filter: drop-shadow(0 20px 38px rgba(53, 167, 131, 0.18));
+  }
+
+  .proof-list {
+    display: grid;
+    gap: 12px;
+  }
+
+  .proof-item {
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .proof-item code {
+    color: var(--mint-dark);
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .proof-item p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .launch {
+    width: 100%;
+    border-top: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .launch-inner {
+    width: min(1160px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 62px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+  }
+
+  .launch h2 {
+    max-width: 680px;
+  }
+
+  .launch p {
+    max-width: 620px;
+    margin: 14px 0 0;
+    color: var(--muted);
+  }
+
+  footer {
+    width: min(1160px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 28px 0 40px;
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    color: var(--muted);
+    font: 12px/1.5 var(--mono);
+  }
+
+  @media (max-width: 900px) {
+    .hero-inner,
+    .proof {
+      grid-template-columns: 1fr;
+    }
+
+    .terminal {
+      min-height: 330px;
+    }
+
+    .mode-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .launch-inner {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .nav {
+      width: min(100% - 28px, 1160px);
+      min-height: 64px;
+    }
+
+    .brand img { width: 62px; }
+    .brand span { display: none; }
+    .navlinks a:not(.button) { display: none; }
+
+    .hero-inner,
+    section,
+    .launch-inner,
+    footer {
+      width: min(100% - 28px, 1160px);
+    }
+
+    .hero {
+      min-height: calc(100svh - 86px);
+    }
+
+    .hero-inner {
+      padding-top: 44px;
+      gap: 28px;
+    }
+
+    h1 {
+      font-size: clamp(72px, 25vw, 120px);
+    }
+
+    .hero-copy {
+      font-size: 17px;
+    }
+
+    .terminal-body {
+      padding: 16px;
+      font-size: 12px;
+    }
+
+    .terminal {
+      display: none;
+    }
+
+    .proof-item {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    footer {
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="topbar">
+  <nav class="nav" aria-label="Primary">
+    <a class="brand" href="index.html" aria-label="Veil home">
+      <img src="Media/Veil.svg" alt="">
+      <span>Veil</span>
+    </a>
+    <div class="navlinks">
+      <a href="#modes">Modes</a>
+      <a href="#privacy">Privacy</a>
+      <button class="theme-toggle" type="button" id="themeToggle" aria-label="Toggle color theme">Theme</button>
+      <a class="button primary" href="Veil.html">Open Veil</a>
+    </div>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <canvas id="veilField" aria-hidden="true"></canvas>
+    <div class="hero-inner">
+      <div>
+        <p class="eyebrow">Encrypted communication with cover</p>
+        <h1 id="hero-title">Veil</h1>
+        <p class="hero-copy">Password-protected messages, image payloads, and steganography for people who need confidential communication to pass through ordinary spaces.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="Veil.html">Launch the tool</a>
+          <a class="button secondary" href="#modes">Explore modes</a>
+        </div>
+      </div>
+
+      <aside class="terminal" aria-label="Veil workflow preview">
+        <div class="terminal-head">
+          <div class="lights" aria-hidden="true"><span></span><span></span><span></span></div>
+          <span>local session</span>
+        </div>
+        <div class="terminal-body">
+<pre class="trace"><strong>input</strong>
+  meet at the old reading room, 21:40
+
+<span class="mint">encrypt</span>
+  password derived key
+  authenticated payload
+
+<span class="amber">cover</span>
+  casual banter selected
+  message shaped as ordinary text
+
+<strong>output</strong>
+  Got your note. The coffee place sounds easier
+  after the archive closes. Same table as before.
+
+<span class="blue">image mode</span>
+  binary payload -> readable chatter
+
+<span class="plum">stego mode</span>
+  payload -> cover image pixels</pre>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section id="modes" aria-labelledby="modes-title">
+    <div class="section-head">
+      <h2 id="modes-title">Three ways to hide in plain sight.</h2>
+      <p>Veil keeps the surface familiar while the payload stays locked behind a password.</p>
+    </div>
+    <div class="mode-grid">
+      <article class="mode-card">
+        <div class="mode-mark" aria-hidden="true">01</div>
+        <h3>Write</h3>
+        <p>Turn a secret note into casual or workplace-style chatter that can be decoded later with the same password.</p>
+      </article>
+      <article class="mode-card">
+        <div class="mode-mark" aria-hidden="true">02</div>
+        <h3>Image to text</h3>
+        <p>Encrypt an image into shareable text, then recover the original image from the encoded message.</p>
+      </article>
+      <article class="mode-card">
+        <div class="mode-mark" aria-hidden="true">03</div>
+        <h3>Image in image</h3>
+        <p>Place text or images inside a cover image and reveal the payload with the matching password.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="privacy" aria-labelledby="privacy-title">
+    <div class="proof">
+      <div class="identity" aria-label="Veil identity mark">
+        <img src="Media/Veil.svg" alt="Veil">
+      </div>
+      <div>
+        <div class="section-head">
+          <h2 id="privacy-title">Built for sensitive work.</h2>
+          <p>The app is intentionally small, direct, and local-first: fewer moving parts, clearer intent, less surface area.</p>
+        </div>
+        <div class="proof-list">
+          <article class="proof-item">
+            <code>local</code>
+            <p>Designed as a browser tool you can open directly from the docs folder.</p>
+          </article>
+          <article class="proof-item">
+            <code>password</code>
+            <p>Every protected payload relies on a password supplied by the sender and recipient.</p>
+          </article>
+          <article class="proof-item">
+            <code>cover</code>
+            <p>Outputs are shaped to look like ordinary text or ordinary images instead of obvious encrypted blobs.</p>
+          </article>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="launch">
+    <div class="launch-inner">
+      <div>
+        <h2>Open Veil and start with the mode that matches the channel.</h2>
+        <p>Text for messages, image-to-text when files are awkward, and image-in-image when a visual cover is the better disguise.</p>
+      </div>
+      <a class="button primary" href="Veil.html">Open Veil</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>VEIL / experimental privacy utility</span>
+  <span>Keep passwords separate from the messages they unlock.</span>
+</footer>
+
+<script>
+  const root = document.documentElement;
+  const savedTheme = localStorage.getItem("veilLandingTheme");
+  if (savedTheme) root.dataset.theme = savedTheme;
+
+  document.getElementById("themeToggle").addEventListener("click", () => {
+    const next = root.dataset.theme === "dark" ? "light" : "dark";
+    root.dataset.theme = next;
+    localStorage.setItem("veilLandingTheme", next);
+  });
+
+  const canvas = document.getElementById("veilField");
+  const ctx = canvas.getContext("2d");
+  const chars = "VEIL0123456789abcdefghijklmnopqrstuvwxyz";
+  let columns = [];
+  let animationId = 0;
+
+  function resizeField() {
+    const ratio = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = Math.floor(rect.width * ratio);
+    canvas.height = Math.floor(rect.height * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    const count = Math.ceil(rect.width / 18);
+    columns = Array.from({ length: count }, (_, index) => ({
+      x: index * 18,
+      y: Math.random() * rect.height,
+      speed: 0.45 + Math.random() * 1.15,
+      alpha: 0.16 + Math.random() * 0.28
+    }));
+  }
+
+  function drawField() {
+    const rect = canvas.getBoundingClientRect();
+    ctx.fillStyle = "rgba(8, 18, 15, 0.16)";
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    ctx.font = "13px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace";
+
+    for (const column of columns) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillStyle = `rgba(117, 219, 181, ${column.alpha})`;
+      ctx.fillText(char, column.x, column.y);
+      column.y += 18 * column.speed;
+      if (column.y > rect.height + 60) {
+        column.y = -20 - Math.random() * 180;
+        column.alpha = 0.14 + Math.random() * 0.30;
+      }
+    }
+
+    animationId = requestAnimationFrame(drawField);
+  }
+
+  resizeField();
+  if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    drawField();
+  }
+
+  window.addEventListener("resize", () => {
+    cancelAnimationFrame(animationId);
+    resizeField();
+    if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      drawField();
+    }
+  });
+</script>
+</body>
+</html>
