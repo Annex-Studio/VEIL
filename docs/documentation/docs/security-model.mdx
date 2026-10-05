@@ -1,0 +1,53 @@
+---
+sidebar_position: 5
+---
+
+# Security Model and Limitations
+
+Veil applies password-derived authenticated encryption before using a text or image carrier. Encryption protects the payload; chatter and pixel embedding are concealment formats, not substitutes for encryption.
+
+## Encryption layer
+
+The browser app and CLI derive a 256-bit key from the password with PBKDF2-HMAC-SHA-256 using 250,000 iterations. Each encryption uses a fresh 16-byte salt and 12-byte nonce, then AES-256-GCM with a 96-bit authentication tag. The packed data contains the salt, nonce, ciphertext, and tag.
+
+Authenticated encryption detects an incorrect password or modified ciphertext. It does not make a weak password safe from guessing.
+
+## Carrier formats
+
+### Chatter text
+
+Each encrypted byte maps to a pair of phrases from a fixed dictionary. A format tag identifies the phrase set. This mapping is deterministic and reversible, not encryption: anyone who knows the format can decode the carrier bytes, which still require the password to decrypt.
+
+### Image steganography
+
+The image format stores payload bits in the least-significant bit of each RGB channel and skips alpha. Its header includes a magic value, payload type, and payload length. The output is PNG because lossy formats such as JPEG can alter embedded bits.
+
+## Why password choice matters
+
+Veil depends on the password for both derivation and access control. A weak or reused password lowers the protection of the entire workflow. Use a long, random password whenever possible.
+
+## What Veil protects against
+
+- Disclosure of the plaintext when someone has only the carrier and not the password.
+- Undetected modification of encrypted content, through AES-GCM authentication.
+
+## What Veil does not protect against
+
+- Steganalysis or a determined observer inspecting the image or chatter.
+- Weak, reused, exposed, or phished passwords.
+- Malware, browser extensions, keyloggers, compromised devices, or screenshots.
+- Metadata and identifying details in the cover image or the way it is shared.
+- Loss or corruption caused by editing, resizing, recompressing, or converting a carrier image.
+- Security issues in an unaudited application or its runtime dependencies.
+- Permanent loss if the password is forgotten.
+
+## Operational guidance
+
+For real-world use, keep these habits in mind:
+
+- validate the workflow with test media before sending a real secret,
+- use trusted cover images and avoid repeated transformations,
+- verify the payload length and image capacity before distribution,
+- and share the password by a separate secure channel when possible.
+
+Veil is an experimental privacy aid, not an audited secure-messaging platform. It provides no guarantee of invisibility against steganalysis or protection from active adversaries. Do not use it as the sole safeguard for high-risk or life-critical communication.

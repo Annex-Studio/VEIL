@@ -1,0 +1,212 @@
+.hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--veil-border);
+  background:
+    linear-gradient(105deg, color-mix(in srgb, var(--veil-soft) 78%, var(--veil-bg)) 0%, var(--veil-bg) 58%),
+    var(--veil-bg);
+}
+
+.heroInner {
+  width: min(1160px, calc(100% - 48px));
+  min-height: min(620px, calc(100svh - 220px));
+  margin: 0 auto;
+  padding: 76px 0 64px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: clamp(36px, 7vw, 100px);
+  align-items: center;
+}
+
+.heroCopy {
+  max-width: 690px;
+  animation: arrive 650ms ease-out both;
+}
+
+.eyebrow {
+  width: fit-content;
+  margin: 0 0 18px;
+  color: var(--veil-muted);
+  font: 700 12px/1 var(--veil-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.heroCopy h1 {
+  margin: 0;
+  color: var(--veil-ink);
+  font-family: var(--veil-serif);
+  font-size: clamp(76px, 12vw, 148px);
+  font-weight: 650;
+  line-height: 0.88;
+}
+
+.lede {
+  max-width: 600px;
+  margin: 26px 0 0;
+  color: var(--veil-muted);
+  font-size: 19px;
+  line-height: 1.6;
+}
+
+.actions {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.primaryAction,
+.secondaryAction {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--veil-border);
+  border-radius: 8px;
+  padding: 0 16px;
+  font: 700 13px/1 var(--veil-mono);
+  text-decoration: none;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+}
+
+.primaryAction {
+  border-color: var(--veil-mint);
+  background: var(--veil-mint);
+  color: #071411;
+}
+
+.secondaryAction {
+  background: var(--veil-panel);
+  color: var(--veil-ink);
+}
+
+.primaryAction:hover,
+.secondaryAction:hover {
+  color: var(--veil-ink);
+  border-color: var(--veil-ink);
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.releaseNote {
+  margin: 18px 0 0;
+  color: var(--veil-muted);
+  font: 12px/1.5 var(--veil-mono);
+}
+
+.signal {
+  align-self: center;
+  border: 1px solid var(--veil-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--veil-panel) 88%, transparent);
+  box-shadow: var(--veil-shadow);
+  padding: 18px 20px 14px;
+  animation: arrive 650ms 120ms ease-out both;
+}
+
+.signalHeader,
+.signalFoot {
+  display: flex;
+  justify-content: space-between;
+  color: var(--veil-muted);
+  font: 700 11px/1.4 var(--veil-mono);
+  letter-spacing: 0.06em;
+}
+
+.signalHeader {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--veil-border);
+}
+
+.signalRow {
+  min-height: 72px;
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--veil-border);
+  color: var(--veil-ink);
+  font-family: var(--veil-serif);
+  font-size: 18px;
+}
+
+.signalRow b {
+  color: var(--veil-muted);
+  font: 700 12px/1 var(--veil-mono);
+}
+
+.signalRow i {
+  color: var(--veil-muted);
+  font-size: 14px;
+}
+
+.signalRow strong {
+  color: var(--veil-muted);
+  font: 700 10px/1 var(--veil-mono);
+}
+
+.signalRow:nth-of-type(3) strong { color: var(--veil-amber); }
+.signalRow:nth-of-type(4) strong { color: var(--veil-plum); }
+
+.signalFoot {
+  padding-top: 12px;
+  justify-content: flex-start;
+}
+
+.accessSection {
+  width: min(1160px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 54px 0 22px;
+}
+
+.sectionHeading h2 {
+  margin: 0;
+  color: var(--veil-ink);
+  font-family: var(--veil-serif);
+  font-size: clamp(32px, 5vw, 48px);
+  letter-spacing: 0;
+}
+
+@keyframes arrive {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 850px) {
+  .heroInner {
+    min-height: auto;
+    padding: 64px 0 54px;
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .signal { max-width: 560px; }
+}
+
+@media (max-width: 520px) {
+  .heroInner,
+  .accessSection {
+    width: min(100% - 32px, 1160px);
+  }
+
+  .heroInner { padding-top: 48px; }
+  .lede { font-size: 17px; }
+
+  .actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .primaryAction,
+  .secondaryAction { width: 100%; }
+
+  .signal { padding: 15px; }
+  .signalRow { grid-template-columns: 28px minmax(0, 1fr) auto; gap: 8px; font-size: 16px; }
+  .signalRow strong { font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroCopy,
+  .signal { animation: none; }
+}

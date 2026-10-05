@@ -1,0 +1,39 @@
+---
+sidebar_position: 1
+---
+
+# Veil
+
+Veil combines password-based encryption with text and image steganography. Use it in the [hosted browser app](https://annex-studio.github.io/VEIL/Veil.html), run the [Python CLI](./cli), or [build and host it yourself](./self-hosting).
+
+## Three browser workflows
+
+| Workflow | What it does | Output |
+| --- | --- | --- |
+| **Write / Decode** | Encrypt a text message and encode its bytes as casual or work-style chatter. Decode chatter with the same password. | Text |
+| **Image → text** | Encrypt an image file and encode it in the same chatter format. Decode it from the Decode tab. | Text, then image |
+| **Image in image** | Encrypt text or an image and embed it in a cover image's RGB pixel bits. Reveal it with the password. | PNG carrier |
+
+The chatter is camouflage only; encryption provides confidentiality. Image steganography conceals the presence of a payload from casual inspection, but does not guarantee resistance to steganalysis.
+
+## Quick start
+
+1. Open [Veil in your browser](https://annex-studio.github.io/VEIL/Veil.html). The app runs locally in the browser and does not upload the payload.
+2. Choose a workflow and enter a unique, strong password.
+3. Share the generated chatter or PNG carrier. Send the password separately.
+4. The recipient opens the same app, selects Decode or Reveal, and uses the same password.
+
+For local use, open `docs/Veil.html` in a modern browser. For terminal use, follow the [CLI setup guide](./cli).
+
+## What to expect
+
+- Text-to-chatter and image-to-chatter produce text that can be copied and sent through a text channel.
+- Image-to-chatter can expand a small image into a very large amount of text. Use Image in image for larger files.
+- Image-in-image exports a PNG. Do not convert, resize, recompress, or otherwise edit it after embedding; such changes can destroy the payload.
+- The password is not included in the output. If it is lost, the payload cannot be recovered.
+
+## Security and limitations
+
+The browser and CLI use PBKDF2-SHA-256 with 250,000 iterations to derive an AES-256-GCM key. The app uses a 96-bit authentication tag. See the [security model](./security-model) for the threat model, operational guidance, and limitations.
+
+Veil is an experimental privacy tool, not an audited secure-messaging product. Do not rely on it as the sole protection for high-risk or life-critical communication.

@@ -1,0 +1,54 @@
+---
+sidebar_position: 3
+---
+
+# Python CLI
+
+The CLI is an interactive terminal application with four actions: Write, Decode, Hide Stego, and Reveal Stego. It runs locally and shares the browser app's payload formats.
+
+## Requirements
+
+- Python 3
+- PyCryptodome
+- Pillow
+
+## Install and run
+
+From the repository root, install the Python dependencies and launch the app:
+
+```bash
+python -m pip install -r CLI/requirements.txt
+python CLI/veil.py
+```
+
+On systems where `python` is not the Python 3 command, use `python3` instead. On Windows, `py -3` is also commonly available:
+
+```powershell
+py -3 -m pip install -r CLI\requirements.txt
+py -3 CLI\veil.py
+```
+
+## Menu actions
+
+1. **Write**: enter a message, select casual or office chatter, and set a password. Copy the full output, including the `[B]` or `[O]` prefix.
+2. **Decode**: paste the complete chatter output and enter its password. Text is printed in the terminal; an embedded image is written to the filename you provide.
+3. **Hide Stego**: provide a cover-image path, choose text or an image, enter the secret and password, and choose an output path. The result is saved as PNG.
+4. **Reveal Stego**: provide the PNG carrier and password. Text is printed; recovered image data is saved to the filename you provide.
+
+The interface accepts multiline text by pressing Enter twice to finish. Password entry is hidden by the terminal where supported.
+
+## Optional standalone executable
+
+The repository includes a PyInstaller spec file. Install PyInstaller and build from the `CLI` directory:
+
+```bash
+python -m pip install pyinstaller
+cd CLI
+pyinstaller veil.spec
+```
+
+PyInstaller output is platform-specific; build separately on each target operating system. The project does not currently provide a prebuilt executable release.
+
+## Interoperability
+
+The CLI uses the same PBKDF2/AES-GCM settings and chatter format as the browser app. Chatter messages and supported PNG stego carriers can be exchanged between current versions. Keep the entire chatter string intact and do not modify carrier images after embedding.

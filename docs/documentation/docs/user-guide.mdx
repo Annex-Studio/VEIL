@@ -1,0 +1,94 @@
+---
+sidebar_position: 2
+---
+
+# Browser User Guide
+
+The hosted app and the local `docs/Veil.html` page have the same four tabs: **Write**, **Decode**, **Image → text**, and **Image in image**. The three creation workflows are text-to-chatter, image-to-chatter, and image-in-image; Decode and Reveal recover their outputs.
+
+## Opening the app
+
+Open the [hosted Veil app](https://annex-studio.github.io/VEIL/Veil.html), or load the static app from the project root:
+
+```bash
+# open in a browser
+start docs/Veil.html
+```
+
+The interface is a static browser app. The data transformations described below happen on your device.
+
+## Write mode
+
+Use Write when you want to encode a text secret as chatter.
+
+1. Open the Write panel.
+2. Enter the message or data you want to protect.
+3. Set a strong password.
+4. Choose casual banter or work chatter.
+5. Copy the generated chatter. It includes a short format tag used by Decode.
+
+The recipient selects Decode, pastes the full output including its `[B]` or `[O]` tag, and enters the same password.
+
+## Image → text
+
+This mode encrypts an image file and converts the encrypted bytes into chatter text.
+
+1. Select or drop an image file.
+2. Choose casual banter or work chatter and set a password.
+3. Select **Encrypt to chatter**, then copy the output.
+4. The recipient pastes it into Decode and enters the password. Veil displays the recovered image and offers a save action.
+
+The text representation can be much larger than the original image. The live estimate shows the approximate number of chatter lines. For larger images, use Image in image.
+
+## Decode mode
+
+To decode a message:
+
+1. Paste the encoded output into the decode field.
+2. Enter the same password used during encoding.
+3. Run the decode operation.
+4. Verify that the output matches the original message.
+
+If the password is wrong or the payload is corrupted, the app will not return a valid result.
+
+## Hide mode
+
+Use Image in image when you want to conceal encrypted text or image data inside a cover image.
+
+1. Load a cover image.
+2. Choose the type of secret you are embedding, such as text or image data.
+3. Enter a password.
+4. Confirm the payload size and available image capacity.
+5. Select **Hide in image**, then download the generated PNG.
+
+The generated PNG is the carrier. Send that file without resizing, recompressing, or editing it; image transformations can corrupt hidden bits. A larger secret requires a larger cover image, and the app may upscale the cover to fit within its size limit.
+
+## Reveal mode
+
+To recover hidden content:
+
+1. Load the stego image into the reveal panel.
+2. Enter the password.
+3. Run the reveal operation.
+4. If the image contains a valid payload, the app will decrypt and display the secret.
+
+The app checks the embedded header and payload length before decryption. For image secrets, it displays the recovered image and offers a save action; for text, it displays the recovered text in the status area.
+
+## Best practices
+
+- Use a long, unique password for each payload.
+- Keep the cover image unmodified after generation.
+- Use a sufficiently large cover image for the payload. The maximum upscaled dimension is 3000 pixels.
+- Test the full workflow before sending a final secret to someone else.
+- Always verify that both sender and receiver are using the same app version.
+
+## Capacity considerations
+
+The amount of data that can be hidden depends on:
+
+- image resolution,
+- image format and color depth,
+- payload type,
+- and the chosen embedding method.
+
+Larger payloads may require image upscaling or a larger cover image to fit the hidden data. The app reports capacity after loading a cover image.

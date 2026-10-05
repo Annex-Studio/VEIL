@@ -1,0 +1,60 @@
+---
+sidebar_position: 4
+---
+
+# Build and Self-Host
+
+The site is static. Building it copies the canonical browser app (`docs/Veil.html`) and its logo into the output. In this repository, the post-build step also publishes Docusaurus to `docs/manual/`, creating a real documentation route alongside the landing page and browser app.
+
+## Requirements
+
+- Node.js 20 or later
+- npm
+
+## Run locally
+
+From the repository root:
+
+```bash
+cd docs/documentation
+npm install
+npm run start
+```
+
+Open `http://localhost:3000/intro` for the overview or `http://localhost:3000/Veil.html` for the browser app. The development server uses a root base URL so styles load locally; production builds use the `/VEIL/manual/` GitHub Pages path. Do not open generated HTML directly with `file://`.
+
+## Production build
+
+```bash
+cd docs/documentation
+npm ci
+npm run build
+```
+
+The intermediate Docusaurus output is in `docs/documentation/build/`. The post-build step copies the finished site to `docs/manual/`, which is the public docs route when GitHub Pages publishes the repository's `docs/` folder. Confirm these files exist before deploying:
+
+- `docs/manual/index.html` (documentation home)
+- `docs/manual/intro.html` (documentation overview)
+- `docs/manual/Veil.html` (browser application copy)
+- `docs/manual/Media/Veil.svg` (app logo)
+
+The configured base path is `/VEIL/manual/`. If hosting under a different path, update `baseUrl` in `docusaurus.config.js` before building.
+
+## GitHub Pages deployment
+
+This repository serves GitHub Pages from its `docs/` folder. Build the documentation and include the generated `docs/manual/` directory in the same commit as your source changes:
+
+```bash
+cd docs/documentation
+npm ci
+npm run build
+git add ../manual
+git commit -m "Publish Veil documentation"
+git push
+```
+
+After Pages updates, verify the docs at `https://annex-studio.github.io/VEIL/manual/intro.html` and the browser app at `https://annex-studio.github.io/VEIL/Veil.html`.
+
+## Other static hosts
+
+Upload the contents of `docs/manual/` to a `manual/` subdirectory under the static site root, preserving the directory structure. The configured base path is `/VEIL/manual/`; update it to match the destination if the host uses a different path.

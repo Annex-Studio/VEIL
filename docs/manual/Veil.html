@@ -1,0 +1,1544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Veil</title>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #f7f8f3;
+    --panel: #ffffff;
+    --panel-soft: #eef3ef;
+    --panel-border: #d7ded9;
+    --ink: #101917;
+    --muted: #53615d;
+    --accent-write: #35a783;
+    --accent-image: #d88b32;
+    --accent-stego: #7a5aa6;
+    --danger: #a83f3a;
+    --ok: #14735c;
+    --focus: #35a783;
+    --shadow: 0 18px 45px rgba(20, 40, 36, 0.11);
+    --radius: 8px;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, "Roboto Mono", monospace;
+    --serif: Charter, "Iowan Old Style", Georgia, serif;
+    --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e1413;
+      --panel: #151d1b;
+      --panel-soft: #1d2926;
+      --panel-border: #2d3c38;
+      --ink: #edf5ef;
+      --muted: #a8b7b0;
+      --accent-write: #75dbb5;
+      --accent-image: #f0b56a;
+      --accent-stego: #c2a6ec;
+      --danger: #ef8a81;
+      --ok: #75dbb5;
+      --focus: #75dbb5;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e1413;
+    --panel: #151d1b;
+    --panel-soft: #1d2926;
+    --panel-border: #2d3c38;
+    --ink: #edf5ef;
+    --muted: #a8b7b0;
+    --accent-write: #75dbb5;
+    --accent-image: #f0b56a;
+    --accent-stego: #c2a6ec;
+    --danger: #ef8a81;
+    --ok: #75dbb5;
+    --focus: #75dbb5;
+    --shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  }
+
+  html {
+    scroll-padding-top: 92px;
+    background: var(--bg);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    background:
+      linear-gradient(135deg, color-mix(in srgb, var(--panel-soft) 72%, transparent) 0%, transparent 38%),
+      linear-gradient(180deg, color-mix(in srgb, var(--panel) 50%, transparent) 0%, var(--bg) 46%),
+      var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  a { color: inherit; }
+
+  .wrap {
+    width: min(1120px, calc(100% - 40px));
+    margin: 0 auto;
+    padding: 0 0 56px;
+  }
+
+  .appbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 1px solid color-mix(in srgb, var(--panel-border) 84%, transparent);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(18px);
+  }
+
+  .appbar-inner {
+    width: min(1120px, calc(100% - 40px));
+    min-height: 72px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .brand img {
+    width: 76px;
+    height: auto;
+    display: block;
+  }
+
+  .brand span {
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 650;
+    line-height: 1;
+  }
+
+  .app-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .homeLink,
+  .themeBtn {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    padding: 0 12px;
+    background: transparent;
+    color: var(--muted);
+    font: 700 12px/1 var(--mono);
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .homeLink:hover,
+  .themeBtn:hover {
+    color: var(--ink);
+    border-color: var(--panel-border);
+    background: var(--panel);
+  }
+
+  header.hero {
+    padding: 54px 0 30px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+    gap: 34px;
+    align-items: end;
+  }
+
+  .eyebrow {
+    width: fit-content;
+    margin: 0 0 14px;
+    border: 1px solid var(--panel-border);
+    border-radius: 999px;
+    padding: 7px 11px;
+    background: color-mix(in srgb, var(--panel) 72%, transparent);
+    color: var(--muted);
+    font: 700 12px/1 var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  header h1 {
+    margin: 0;
+    font-family: var(--serif);
+    font-weight: 650;
+    font-size: clamp(52px, 9vw, 104px);
+    line-height: 0.98;
+    letter-spacing: 0;
+  }
+
+  header p {
+    margin: 18px 0 0;
+    color: var(--muted);
+    font-size: clamp(16px, 2vw, 19px);
+    max-width: 66ch;
+  }
+
+  .privacy-note {
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--panel) 82%, transparent);
+    box-shadow: var(--shadow);
+    padding: 18px;
+    font: 13px/1.55 var(--mono);
+    color: var(--muted);
+  }
+
+  .privacy-note strong {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  nav.tabs {
+    position: sticky;
+    top: 72px;
+    z-index: 15;
+    display: flex;
+    gap: 8px;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    margin-bottom: 22px;
+    padding: 7px;
+    background: color-mix(in srgb, var(--panel) 84%, transparent);
+    box-shadow: 0 12px 30px rgba(20, 40, 36, 0.07);
+    backdrop-filter: blur(18px);
+    overflow-x: auto;
+  }
+
+  nav.tabs button {
+    appearance: none;
+    min-height: 42px;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--muted);
+    padding: 0 14px;
+    font: 700 13px/1 var(--mono);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  nav.tabs button:hover {
+    color: var(--ink);
+    background: var(--panel-soft);
+  }
+
+  nav.tabs button.active {
+    color: #071411;
+    background: var(--accent-write);
+  }
+
+  nav.tabs button[data-accent="image"].active {
+    background: var(--accent-image);
+  }
+
+  nav.tabs button[data-accent="stego"].active {
+    background: var(--accent-stego);
+    color: #fff;
+  }
+
+  .pane { display: none; }
+
+  .pane.active {
+    display: block;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--panel) 92%, transparent);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+
+  label {
+    display: block;
+    font: 700 12px/1.2 var(--mono);
+    color: var(--muted);
+    margin: 18px 0 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  label:first-child { margin-top: 0; }
+
+  textarea, input[type="text"], input[type="password"], select {
+    width: 100%;
+    background: var(--panel);
+    color: var(--ink);
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 12px 13px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.55;
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+
+  textarea::placeholder,
+  input::placeholder {
+    color: color-mix(in srgb, var(--muted) 72%, transparent);
+  }
+
+  textarea:focus, input:focus, select:focus {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+    border-color: var(--focus);
+  }
+
+  textarea { resize: vertical; }
+  textarea[readonly] { color: var(--ink); opacity: 0.92; }
+
+  .pwRow { display: flex; gap: 8px; align-items: stretch; }
+  .pwRow input { flex: 1; }
+  .pwRow button { flex: 0 0 auto; }
+
+  .radioRow {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .radioRow label {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 0 12px;
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+    font: 600 13px/1 var(--sans);
+  }
+
+  .radioRow input { width: auto; accent-color: var(--accent-write); }
+
+  .row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+    align-items: center;
+  }
+
+  button.btn {
+    appearance: none;
+    min-height: 42px;
+    padding: 0 15px;
+    border-radius: var(--radius);
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    color: var(--ink);
+    cursor: pointer;
+    font: 700 13px/1 var(--mono);
+    transition: transform .15s, border-color .15s, background .15s;
+  }
+
+  button.btn:hover {
+    border-color: var(--ink);
+    transform: translateY(-1px);
+  }
+
+  button.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  button.primary {
+    background: var(--accent-write);
+    border-color: var(--accent-write);
+    color: #071411;
+  }
+
+  .pane[data-section="image"] button.primary { background: var(--accent-image); border-color: var(--accent-image); }
+  .pane[data-section="stego"] button.primary { background: var(--accent-stego); border-color: var(--accent-stego); color: #fff; }
+
+  button.danger {
+    color: var(--danger);
+    border-color: color-mix(in srgb, var(--danger) 52%, var(--panel-border));
+    background: transparent;
+  }
+
+  .dropzone {
+    border: 1px dashed color-mix(in srgb, var(--panel-border) 74%, var(--muted));
+    border-radius: var(--radius);
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    background: var(--panel-soft);
+    font: 700 13px/1.4 var(--mono);
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+
+  .dropzone:hover,
+  .dropzone.drag {
+    border-color: var(--focus);
+    color: var(--ink);
+    background: color-mix(in srgb, var(--panel-soft) 70%, var(--panel));
+  }
+
+  .dropzone input { display: none; }
+  .fileInfo { margin-top: 6px; font-size: 12px; color: var(--muted); }
+
+  .status {
+    margin-top: 16px;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 13px 14px;
+    font-size: 13px;
+    font-family: var(--mono);
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 46px;
+    background: var(--panel);
+  }
+
+  .status.ok   { border-color: var(--ok); color: var(--ok); }
+  .status.warn { border-color: var(--danger); color: var(--danger); }
+  .status.idle { color: var(--muted); }
+
+  .capacity {
+    font: 12px/1.45 var(--mono);
+    color: var(--muted);
+    margin-top: 8px;
+  }
+
+  .capacity.over { color: var(--danger); }
+
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .box {
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    padding: 18px;
+    background: var(--panel);
+  }
+
+  .box h3 {
+    font-family: var(--serif);
+    margin: 0 0 10px;
+    font-size: 24px;
+    font-weight: 640;
+    letter-spacing: 0;
+  }
+
+  img.preview {
+    max-width: 100%;
+    border-radius: var(--radius);
+    border: 1px solid var(--panel-border);
+    margin-top: 10px;
+    display: block;
+  }
+
+  canvas { display: none; }
+
+  .toast {
+    position: fixed;
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s, transform .18s;
+    z-index: 50;
+  }
+
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  footer {
+    margin-top: 24px;
+    border: 1px solid var(--panel-border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--panel) 78%, transparent);
+    color: var(--muted);
+    font: 12px/1.6 var(--mono);
+    padding: 16px;
+  }
+
+  footer p { margin: 0; }
+
+  @media (max-width: 820px) {
+    .wrap,
+    .appbar-inner {
+      width: min(100% - 28px, 1120px);
+    }
+
+    header.hero {
+      grid-template-columns: 1fr;
+      padding-top: 36px;
+    }
+
+    nav.tabs {
+      top: 64px;
+    }
+
+    .split {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .appbar-inner {
+      min-height: 64px;
+    }
+
+    .brand img { width: 62px; }
+    .brand span { display: none; }
+    .homeLink { display: none; }
+
+    header h1 {
+      font-size: clamp(54px, 22vw, 86px);
+    }
+
+    .pane.active {
+      padding: 16px;
+    }
+
+    .pwRow {
+      flex-wrap: wrap;
+    }
+
+    .pwRow input {
+      flex-basis: 100%;
+    }
+
+    button.btn {
+      flex: 1 1 auto;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="appbar">
+  <div class="appbar-inner">
+    <a class="brand" href="index.html" aria-label="Veil landing page">
+      <img src="Media/Veil.svg" alt="">
+      <span>Veil</span>
+    </a>
+    <div class="app-actions">
+      <a class="homeLink" href="index.html">Landing</a>
+      <button class="themeBtn" id="themeBtn" onclick="toggleTheme()">Theme</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <header class="hero">
+    <div>
+      <p class="eyebrow">Local privacy workspace</p>
+      <h1>Veil</h1>
+      <p>Encrypt a message or image with a password, then render it as ordinary-looking chatter or hide it inside the pixels of a picture. Everything runs in this page; nothing is uploaded anywhere.</p>
+    </div>
+    <div class="privacy-note">
+      <strong>Operational note</strong>
+      Keep passwords separate from the messages they unlock. The cover is camouflage; the protection comes from the encrypted payload underneath.
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-accent="write" data-tab="write" onclick="showTab('write')">Write</button>
+    <button class="tab"        data-accent="write" data-tab="decode" onclick="showTab('decode')">Decode</button>
+    <button class="tab"        data-accent="image" data-tab="image" onclick="showTab('image')">Image → text</button>
+    <button class="tab"        data-accent="stego" data-tab="stego" onclick="showTab('stego')">Image in image</button>
+  </nav>
+
+  <!-- ============ WRITE ============ -->
+  <section id="pane-write" class="pane active" data-section="write">
+    <label for="secret">Secret message</label>
+    <textarea id="secret" rows="4" placeholder="Type what you actually want to say..." oninput="updateWriteEstimate()"></textarea>
+    <div id="writeEstimate" class="capacity"></div>
+
+    <label>Disguise as</label>
+    <div class="radioRow">
+      <label><input type="radio" name="wMode" value="banter" checked> Casual banter</label>
+      <label><input type="radio" name="wMode" value="office"> Work chatter</label>
+    </div>
+
+    <label for="wPass">Password</label>
+    <div class="pwRow">
+      <input id="wPass" type="password" placeholder="anything — just remember it">
+      <button class="btn" onclick="togglePw('wPass')">show</button>
+      <button class="btn" onclick="randomPw('wPass')">random</button>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" onclick="writeEncode()">Disguise it</button>
+      <button class="btn danger" onclick="wipeAll()">Wipe everything</button>
+    </div>
+
+    <div id="writeStatus" class="status idle">Ready.</div>
+
+    <label for="disguised">Disguised message <span style="color:var(--muted)">— send this</span></label>
+    <textarea id="disguised" rows="7" readonly placeholder="Your disguised message appears here..."></textarea>
+    <div class="row">
+      <button class="btn" onclick="copyField('disguised')">Copy</button>
+    </div>
+  </section>
+
+  <!-- ============ DECODE ============ -->
+  <section id="pane-decode" class="pane" data-section="write">
+    <p style="color:var(--muted); font-size:12.5px; margin:0 0 4px;">
+      Works on anything made in the Write or Image → text tabs.
+    </p>
+    <label for="incoming">Chatter you received</label>
+    <textarea id="incoming" rows="7" placeholder="Paste the disguised message..."></textarea>
+
+    <label for="dPass">Password</label>
+    <div class="pwRow">
+      <input id="dPass" type="password" placeholder="the password they gave you">
+      <button class="btn" onclick="togglePw('dPass')">show</button>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" onclick="writeDecode()">Reveal</button>
+      <button class="btn danger" onclick="wipeAll()">Wipe everything</button>
+    </div>
+
+    <div id="decodeStatus" class="status idle">Waiting for input.</div>
+    <img id="decodedImg" class="preview" style="display:none;">
+    <div class="row">
+      <button id="decodedImgDl" class="btn" style="display:none;" onclick="downloadDecodedImg()">Save decoded image</button>
+    </div>
+  </section>
+
+  <!-- ============ IMAGE -> TEXT ============ -->
+  <section id="pane-image" class="pane" data-section="image">
+    <p style="color:var(--muted); font-size:12.5px; margin:0 0 4px;">
+      Turns a picture into disguised chatter text. Send the text, not the picture —
+      decode it back into the image on the Decode tab. Every byte of the image
+      becomes a line of chatter, so this reads best for small images; for anything
+      more than a few KB, "Image in image" hides it in a picture's pixels instead,
+      without any text blow-up.
+    </p>
+
+    <label>Image to hide</label>
+    <div class="dropzone" id="imgDrop">
+      Click, or drag an image here
+      <input type="file" id="secretImg" accept="image/*">
+    </div>
+    <div id="secretImgInfo" class="fileInfo"></div>
+    <div id="imageEstimate" class="capacity"></div>
+
+    <label>Disguise as</label>
+    <div class="radioRow">
+      <label><input type="radio" name="iMode" value="banter" checked> Casual banter</label>
+      <label><input type="radio" name="iMode" value="office"> Work chatter</label>
+    </div>
+
+    <label for="iPass">Password</label>
+    <div class="pwRow">
+      <input id="iPass" type="password" placeholder="the password">
+      <button class="btn" onclick="togglePw('iPass')">show</button>
+      <button class="btn" onclick="randomPw('iPass')">random</button>
+    </div>
+
+    <div class="row">
+      <button class="btn primary" onclick="imageToChatter()">Encrypt to chatter</button>
+      <button class="btn danger" onclick="wipeAll()">Wipe everything</button>
+    </div>
+
+    <div id="imageStatus" class="status idle">Ready.</div>
+
+    <label for="imgChatter">Disguised chatter <span style="color:var(--muted)">— send this</span></label>
+    <textarea id="imgChatter" rows="7" readonly placeholder="The encrypted image appears as chatter here..."></textarea>
+    <div class="row">
+      <button class="btn" onclick="copyField('imgChatter')">Copy</button>
+    </div>
+  </section>
+
+  <!-- ============ IMAGE IN IMAGE (stego) ============ -->
+  <section id="pane-stego" class="pane" data-section="stego">
+    <div class="split">
+      <div class="box">
+        <h3>Hide</h3>
+
+        <label>Cover image (PNG or JPG)</label>
+        <div class="dropzone" id="coverDrop">
+          Click, or drag a cover image here
+          <input type="file" id="cover" accept="image/*">
+        </div>
+        <div id="capacityInfo" class="capacity"></div>
+
+        <label>What to hide</label>
+        <div class="radioRow">
+          <label><input type="radio" name="sType" value="text" checked> Text</label>
+          <label><input type="radio" name="sType" value="image"> Image</label>
+        </div>
+
+        <div id="stextWrap">
+          <label for="stext">Secret text</label>
+          <textarea id="stext" rows="3" placeholder="What to hide..."></textarea>
+        </div>
+        <div id="simgWrap" style="display:none;">
+          <label>Secret image</label>
+          <div class="dropzone" id="simgDrop">
+            Click, or drag an image here
+            <input type="file" id="simg" accept="image/*">
+          </div>
+          <div id="simgInfo" class="fileInfo"></div>
+        </div>
+
+        <label for="sPass">Password</label>
+        <div class="pwRow">
+          <input id="sPass" type="password" placeholder="the password">
+          <button class="btn" onclick="togglePw('sPass')">show</button>
+          <button class="btn" onclick="randomPw('sPass')">random</button>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" onclick="stegoHide()">Hide in image</button>
+        </div>
+        <div id="hideStatus" class="status idle">Ready.</div>
+        <img id="coverPreview" class="preview" style="display:none;">
+        <div class="row">
+          <button id="dlCoverBtn" class="btn" style="display:none;" onclick="downloadCoverPng()">Download PNG</button>
+        </div>
+      </div>
+
+      <div class="box">
+        <h3>Reveal</h3>
+
+        <label>Image with a hidden payload</label>
+        <div class="dropzone" id="revealDrop">
+          Click, or drag the image here
+          <input type="file" id="revealImg" accept="image/*">
+        </div>
+
+        <label for="rPass">Password</label>
+        <div class="pwRow">
+          <input id="rPass" type="password" placeholder="the password">
+          <button class="btn" onclick="togglePw('rPass')">show</button>
+        </div>
+
+        <div class="row">
+          <button class="btn primary" onclick="stegoReveal()">Reveal</button>
+        </div>
+        <div id="revealStatus" class="status idle">Ready.</div>
+        <img id="revealedImg" class="preview" style="display:none;">
+        <div class="row">
+          <button id="dlRevealBtn" class="btn" style="display:none;" onclick="downloadRevealedImg()">Save revealed image</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <canvas id="canvas"></canvas>
+
+  <footer>
+    <p>The password-based disguise (chatter text) is cosmetic camouflage, not the security —
+       the actual protection is AES-GCM encryption underneath. Encrypted bytes are
+       indistinguishable from random noise, so turning them into real words always takes
+       a fair number of words; a short sentence still becomes a few dozen lines once salted,
+       nonced, and tagged. It's meant to not look like ciphertext at a glance, not to survive
+       close reading. Steganography (the "Image in image" tab) hides the fact that anything
+       is hidden at all, as long as the cover image isn't scrutinized pixel-by-pixel — that's
+       the stronger option for anything you don't want found.</p>
+  </footer>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+/* ======================================================================
+   Veil
+   ----------------------------------------------------------------------
+   Three layers, same underneath everywhere:
+
+   1. CRYPTO   password -> key (PBKDF2) -> AES-GCM encrypt/decrypt.
+               Packed as: salt(16 bytes) | nonce(12 bytes) | ciphertext.
+               This is the ONLY thing that actually keeps your message
+               secret. Everything below is just a way to carry those
+               encrypted bytes around.
+
+   2. CODEC    turns the encrypted bytes into either:
+               - "chatter" text (two short phrases per byte, picked from
+                 a fixed phrase bank by position) — looks like ordinary
+                 texting, for the Write / Image->text tabs.
+               - pixels of a picture (steganography) — hides the bytes
+                 in the least-significant bit of each color channel, for
+                 the Image-in-image tab.
+
+   3. UI       wires the above to the page.
+   ====================================================================== */
+
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+const objectUrls = new Set(); // tracked so we can revoke old ones and avoid leaking memory
+
+/* ---------------------------------------------------------------- *
+ * 1. CRYPTO
+ * ---------------------------------------------------------------- */
+
+// 96-bit auth tag instead of the 128-bit default — still well inside NIST's
+// recommended range (>=96 bits) for general use, just trims a few bytes off
+// every message. Salt (16 bytes) and nonce (12 bytes) are left at their
+// standard recommended sizes; those shouldn't be shrunk.
+const TAG_BITS = 96;
+
+// Turns a human password into a 256-bit AES key. PBKDF2 deliberately
+// runs 250,000 rounds of hashing so guessing passwords is slow even if
+// someone gets hold of an encrypted message.
+async function deriveKey(password, salt) {
+  const base = await crypto.subtle.importKey(
+    "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations: 250000, hash: "SHA-256" },
+    base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+
+// plaintext bytes + password -> salt|nonce|ciphertext (one Uint8Array)
+async function encryptBytes(plainBytes, password) {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt);
+  const ct = new Uint8Array(await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: nonce, tagLength: TAG_BITS }, key, plainBytes));
+  return concatBytes(salt, nonce, ct);
+}
+
+// salt|nonce|ciphertext + password -> plaintext bytes (throws if the
+// password is wrong or the data was tampered with — AES-GCM verifies
+// integrity, it won't silently hand back garbage)
+async function decryptBytes(packed, password) {
+  if (packed.length < 16 + 12 + TAG_BITS / 8) throw new Error("too short to be valid");
+  const salt = packed.slice(0, 16);
+  const nonce = packed.slice(16, 28);
+  const ct = packed.slice(28);
+  const key = await deriveKey(password, salt);
+  const pt = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: nonce, tagLength: TAG_BITS }, key, ct);
+  return new Uint8Array(pt);
+}
+
+function concatBytes(...arrs) {
+  const total = arrs.reduce((n, a) => n + a.length, 0);
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const a of arrs) { out.set(a, offset); offset += a.length; }
+  return out;
+}
+
+// Wraps an image (or any binary file) so it can travel through the same
+// pipeline as text: magic bytes "IMG1" | 1-byte mime length | mime | data
+function packImage(mime, dataBytes) {
+  const mimeBytes = enc.encode(mime);
+  const out = new Uint8Array(4 + 1 + mimeBytes.length + dataBytes.length);
+  out.set([0x49, 0x4d, 0x47, 0x31], 0); // "IMG1"
+  out[4] = mimeBytes.length;
+  out.set(mimeBytes, 5);
+  out.set(dataBytes, 5 + mimeBytes.length);
+  return out;
+}
+function unpackImage(packed) {
+  if (packed.length < 5) return null;
+  if (packed[0] !== 0x49 || packed[1] !== 0x4d || packed[2] !== 0x47 || packed[3] !== 0x31) return null;
+  const mimeLen = packed[4];
+  if (packed.length < 5 + mimeLen) return null;
+  const mime = dec.decode(packed.slice(5, 5 + mimeLen));
+  const data = packed.slice(5 + mimeLen);
+  return { mime, data };
+}
+
+/* ---------------------------------------------------------------- *
+ * 2a. CODEC — chatter text
+ *
+ * Each byte becomes a two-word fragment: one word from list A (its
+ * high nibble) and one short phrase from list B (its low nibble) —
+ * e.g. "honestly" + "running late" -> "honestly running late". A and
+ * B are written so almost any pairing still reads like a real text.
+ * Fragments are then grouped into lines of varying length (1-4
+ * fragments, joined with ", " or " and ") so the output looks like a
+ * natural burst of short messages rather than a uniform list.
+ *
+ * The position of each fragment (its index, not its content) decides
+ * which 16-word slice of A and B it draws from, so decoding can always
+ * reconstruct the exact offset used at encode time — there's no
+ * ambiguity, and it recovers correctly for a message of any length.
+ * Grouping/punctuation is purely cosmetic and stripped before decoding.
+ * ---------------------------------------------------------------- */
+
+const A_BANTER = ["literally", "honestly", "kinda", "pretty", "super", "really",
+  "probably", "definitely", "totally", "actually", "basically", "seriously",
+  "obviously", "apparently", "clearly", "finally"];
+const B_BANTER = ["running late", "almost done", "on my way", "still waiting",
+  "good to go", "out of time", "not sure yet", "way too tired", "super busy",
+  "free tonight", "stuck in traffic", "about to leave", "back online",
+  "taking a break", "heading out", "just landed"];
+
+const A_OFFICE = ["quickly", "briefly", "roughly", "currently", "technically",
+  "generally", "effectively", "ideally", "ultimately", "specifically",
+  "apparently", "presumably", "eventually", "immediately", "accordingly", "respectively"];
+const B_OFFICE = ["reviewing the doc", "stuck in a meeting", "waiting on approval",
+  "pushing the update", "closing the ticket", "following up later",
+  "checking the build", "syncing with the team", "finishing the report",
+  "blocked on design", "out until noon", "joining the call", "sharing my screen",
+  "updating the board", "merging the branch", "running a bit behind"];
+
+const FLAVORS = {
+  banter: { A: A_BANTER, B: B_BANTER, tag: "B" },
+  office: { A: A_OFFICE, B: B_OFFICE, tag: "O" },
+};
+const TAG_TO_FLAVOR = { B: "banter", O: "office" };
+const GROUP_PATTERN = [3, 4, 2, 5, 3, 4, 2, 5]; // averages 3.5 fragments/line
+
+function bytesToChatter(bytes, A, B) {
+  const fragments = [];
+  for (let i = 0; i < bytes.length; i++) {
+    const hi = (bytes[i] >> 4) & 0xf, lo = bytes[i] & 0xf;
+    const ai = (i * 3 + hi) % 16;
+    const bi = (i * 7 + lo) % 16;
+    fragments.push(A[ai] + " " + B[bi]);
+  }
+  const lines = [];
+  let idx = 0, g = 0;
+  while (idx < fragments.length) {
+    const n = GROUP_PATTERN[g % GROUP_PATTERN.length];
+    const chunk = fragments.slice(idx, idx + n);
+    const joiner = g % 3 === 2 ? " and " : ", ";
+    const line = chunk.join(joiner);
+    lines.push(line.charAt(0).toUpperCase() + line.slice(1));
+    idx += n;
+    g++;
+  }
+  return lines.join("\n");
+}
+function chatterToBytes(text, A, B) {
+  const rawFragments = text
+    .split("\n")
+    .flatMap(line => line.toLowerCase().split(/\s*,\s*|\s+and\s+/))
+    .map(s => s.trim())
+    .filter(Boolean);
+  if (rawFragments.length === 0) return null;
+  const bytes = [];
+  for (let i = 0; i < rawFragments.length; i++) {
+    const tokens = rawFragments[i].split(/\s+/);
+    const aWord = tokens[0];
+    const bWord = tokens.slice(1).join(" ");
+    const ai = A.indexOf(aWord);
+    const bi = B.indexOf(bWord);
+    if (ai < 0 || bi < 0) return null;
+    const hi = ((ai - i * 3) % 16 + 16) % 16;
+    const lo = ((bi - i * 7) % 16 + 16) % 16;
+    bytes.push((hi << 4) | lo);
+  }
+  return new Uint8Array(bytes);
+}
+
+// Roughly how many bytes of ciphertext a given plaintext length produces
+// (16-byte salt + 12-byte nonce + ciphertext, which is plaintext + a
+// 16-byte auth tag) — used to show a live "about N lines" estimate.
+function estimatePackedLength(plainByteLength) {
+  return 16 + 12 + plainByteLength + TAG_BITS / 8;
+}
+
+async function packedToChatter(packed, flavor) {
+  const { A, B, tag } = FLAVORS[flavor];
+  return `[${tag}] ` + bytesToChatter(packed, A, B);
+}
+function chatterToPacked(raw) {
+  const m = raw.trim().match(/^\[([BO])\]\s*([\s\S]*)$/);
+  if (!m) return null;
+  const flavor = TAG_TO_FLAVOR[m[1]];
+  const { A, B } = FLAVORS[flavor];
+  return chatterToBytes(m[2], A, B);
+}
+
+/* ---------------------------------------------------------------- *
+ * 2b. CODEC — image steganography
+ *
+ * Header (9 bytes): "STEG" | kind(1 byte: 0=text, 1=image) | length(4
+ * bytes, big-endian) — then the salt|nonce|ciphertext payload. Each
+ * bit of (header + payload) replaces the least-significant bit of one
+ * RGB channel byte in the cover image, so the picture looks essentially
+ * identical to the eye. Alpha is intentionally skipped: changing it can
+ * trigger canvas premultiply/unpremultiply rounding and corrupt RGB bits.
+ * ---------------------------------------------------------------- */
+
+const STEGO_MAGIC = [0x53, 0x54, 0x45, 0x47]; // "STEG"
+const STEGO_HEADER_BYTES = 9;
+const STEGO_FLATTEN_BG = [247, 248, 243]; // landing-page background, used only behind transparent cover pixels
+
+function flattenImageDataToOpaque(imageData) {
+  const px = imageData.data;
+  for (let i = 0; i < px.length; i += 4) {
+    const alpha = px[i + 3];
+    if (alpha === 255) continue;
+    const inv = 255 - alpha;
+    px[i] = Math.round((px[i] * alpha + STEGO_FLATTEN_BG[0] * inv) / 255);
+    px[i + 1] = Math.round((px[i + 1] * alpha + STEGO_FLATTEN_BG[1] * inv) / 255);
+    px[i + 2] = Math.round((px[i + 2] * alpha + STEGO_FLATTEN_BG[2] * inv) / 255);
+    px[i + 3] = 255;
+  }
+  return imageData;
+}
+
+function stegoTotalCapacityBytes(imageData) {
+  const pixelCount = imageData.data.length / 4;
+  return Math.floor((pixelCount * 3) / 8);
+}
+
+function stegoCapacityBytes(imageData) {
+  return Math.max(0, stegoTotalCapacityBytes(imageData) - STEGO_HEADER_BYTES);
+}
+
+function stegoLegacyTotalCapacityBytes(imageData) {
+  return Math.floor(imageData.data.length / 8);
+}
+
+function writeBitsIntoImage(imageData, bytes) {
+  let bitIndex = 0;
+  const totalBits = bytes.length * 8;
+  const px = imageData.data;
+  for (let i = 0; i < px.length && bitIndex < totalBits; i++) {
+    if ((i & 3) === 3) continue; // skip alpha
+    const byte = bytes[bitIndex >> 3];
+    const bit = (byte >> (7 - (bitIndex & 7))) & 1;
+    px[i] = (px[i] & 0xfe) | bit;
+    bitIndex++;
+  }
+  if (bitIndex < totalBits) throw new Error("payload is larger than image capacity");
+}
+function readBitsFromImage(imageData, byteCount) {
+  if (byteCount > stegoTotalCapacityBytes(imageData)) {
+    throw new Error("requested payload is larger than image capacity");
+  }
+  const out = new Uint8Array(byteCount);
+  const px = imageData.data;
+  const totalBits = byteCount * 8;
+  let bitIndex = 0;
+  for (let i = 0; i < px.length && bitIndex < totalBits; i++) {
+    if ((i & 3) === 3) continue; // skip alpha
+    const bit = px[i] & 1;
+    out[bitIndex >> 3] |= bit << (7 - (bitIndex & 7));
+    bitIndex++;
+  }
+  return out;
+}
+
+function readBitsFromImageLegacyRgba(imageData, byteCount) {
+  if (byteCount > stegoLegacyTotalCapacityBytes(imageData)) {
+    throw new Error("requested payload is larger than legacy image capacity");
+  }
+  const out = new Uint8Array(byteCount);
+  const px = imageData.data;
+  const totalBits = byteCount * 8;
+  for (let i = 0; i < totalBits; i++) {
+    const bit = px[i] & 1;
+    out[i >> 3] |= bit << (7 - (i & 7));
+  }
+  return out;
+}
+
+function isStegoHeader(header) {
+  return header[0] === STEGO_MAGIC[0] &&
+    header[1] === STEGO_MAGIC[1] &&
+    header[2] === STEGO_MAGIC[2] &&
+    header[3] === STEGO_MAGIC[3];
+}
+
+function readStegoHeader(imageData) {
+  const attempts = [
+    {
+      name: "rgb",
+      capacity: stegoTotalCapacityBytes(imageData),
+      read: count => readBitsFromImage(imageData, count)
+    },
+    {
+      name: "legacy-rgba",
+      capacity: stegoLegacyTotalCapacityBytes(imageData),
+      read: count => readBitsFromImageLegacyRgba(imageData, count)
+    }
+  ];
+
+  for (const attempt of attempts) {
+    if (attempt.capacity < STEGO_HEADER_BYTES) continue;
+    const header = attempt.read(STEGO_HEADER_BYTES);
+    if (isStegoHeader(header)) return { ...attempt, header };
+  }
+  return null;
+}
+
+/* ---------------------------------------------------------------- *
+ * 3. UI helpers
+ * ---------------------------------------------------------------- */
+
+function showTab(name) {
+  document.querySelectorAll("nav.tabs button").forEach(b =>
+    b.classList.toggle("active", b.dataset.tab === name));
+  document.querySelectorAll(".pane").forEach(p =>
+    p.classList.toggle("active", p.id === "pane-" + name));
+}
+
+function setStatus(id, message, kind) {
+  const el = document.getElementById(id);
+  el.textContent = message;
+  el.className = "status" + (kind ? " " + kind : " idle");
+}
+
+let toastTimer = null;
+function toast(message) {
+  const el = document.getElementById("toast");
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove("show"), 1600);
+}
+
+function togglePw(id) {
+  const el = document.getElementById(id);
+  el.type = el.type === "password" ? "text" : "password";
+}
+function randomPw(id) {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  const pw = btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "").slice(0, 14);
+  document.getElementById(id).value = pw;
+  document.getElementById(id).type = "text";
+  toast("Random password generated — copy it before you lose it");
+}
+
+async function copyField(id) {
+  const text = document.getElementById(id).value;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    const el = document.getElementById(id);
+    el.select();
+    document.execCommand("copy");
+  }
+  toast("Copied");
+}
+
+function trackUrl(url) { objectUrls.add(url); return url; }
+function revokeAllUrls() { for (const u of objectUrls) URL.revokeObjectURL(u); objectUrls.clear(); }
+
+function fileToBytes(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(new Uint8Array(r.result));
+    r.onerror = () => reject(r.error);
+    r.readAsArrayBuffer(file);
+  });
+}
+function esc(s) { return s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c])); }
+
+function wireDropzone(zoneId, inputId, onFile) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+  zone.addEventListener("click", () => input.click());
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("drag");
+    if (e.dataTransfer.files[0]) {
+      input.files = e.dataTransfer.files;
+      input.dispatchEvent(new Event("change"));
+    }
+  });
+  input.addEventListener("change", () => { if (input.files[0]) onFile(input.files[0]); });
+}
+
+/* ---------------------------------------------------------------- *
+ * Write / Decode tab
+ * ---------------------------------------------------------------- */
+
+function updateWriteEstimate() {
+  const len = enc.encode(document.getElementById("secret").value).length;
+  const el = document.getElementById("writeEstimate");
+  if (len === 0) { el.textContent = ""; return; }
+  const lines = Math.ceil(estimatePackedLength(len) / 3.5); // matches GROUP_PATTERN average
+  el.textContent = `About ${lines} lines of chatter once disguised.`;
+}
+
+async function writeEncode() {
+  const secret = document.getElementById("secret").value;
+  const pass = document.getElementById("wPass").value;
+  const flavor = document.querySelector('input[name="wMode"]:checked').value;
+  if (!secret.trim()) { setStatus("writeStatus", "Write your message first.", "warn"); return; }
+  if (!pass) { setStatus("writeStatus", "Set a password — anything works.", "warn"); return; }
+
+  setStatus("writeStatus", "Encrypting…");
+  try {
+    const packed = await encryptBytes(enc.encode(secret), pass);
+    document.getElementById("disguised").value = await packedToChatter(packed, flavor);
+    setStatus("writeStatus", "Disguised. Copy it and send it.", "ok");
+  } catch (err) {
+    setStatus("writeStatus", "Something went wrong: " + err.message, "warn");
+  }
+}
+
+async function writeDecode() {
+  const raw = document.getElementById("incoming").value;
+  const pass = document.getElementById("dPass").value;
+  const imgEl = document.getElementById("decodedImg");
+  const dlBtn = document.getElementById("decodedImgDl");
+  imgEl.style.display = "none";
+  dlBtn.style.display = "none";
+
+  if (!raw.trim() || !pass) { setStatus("decodeStatus", "Need both the chatter and the password.", "warn"); return; }
+
+  const packed = chatterToPacked(raw);
+  if (!packed) { setStatus("decodeStatus", "That doesn't look like a disguised message.", "warn"); return; }
+
+  setStatus("decodeStatus", "Decrypting…");
+  try {
+    const pt = await decryptBytes(packed, pass);
+    const img = unpackImage(pt);
+    if (img) {
+      const url = trackUrl(URL.createObjectURL(new Blob([img.data], { type: img.mime })));
+      imgEl.src = url;
+      imgEl.style.display = "block";
+      dlBtn.style.display = "inline-block";
+      dlBtn.dataset.url = url;
+      dlBtn.dataset.mime = img.mime;
+      setStatus("decodeStatus", `Decoded an image (${img.mime}, ${img.data.length.toLocaleString()} bytes).`, "ok");
+    } else {
+      setStatus("decodeStatus", dec.decode(pt), "ok");
+    }
+  } catch {
+    setStatus("decodeStatus", "Wrong password.", "warn");
+  }
+}
+function downloadDecodedImg() {
+  const btn = document.getElementById("decodedImgDl");
+  const ext = (btn.dataset.mime || "image/png").split("/")[1] || "png";
+  const a = document.createElement("a");
+  a.href = btn.dataset.url;
+  a.download = "decoded." + ext;
+  a.click();
+}
+
+/* ---------------------------------------------------------------- *
+ * Image -> text tab
+ * ---------------------------------------------------------------- */
+
+let secretImgFile = null;
+wireDropzone("imgDrop", "secretImg", file => {
+  secretImgFile = file;
+  document.getElementById("secretImgInfo").textContent =
+    `${file.name} (${(file.size / 1024).toFixed(1)} KB, ${file.type || "unknown type"})`;
+  const lines = Math.ceil(estimatePackedLength(file.size) / 3.5);
+  const estEl = document.getElementById("imageEstimate");
+  estEl.textContent = `About ${lines.toLocaleString()} lines of chatter once disguised.`;
+  estEl.className = lines > 300 ? "capacity over" : "capacity";
+});
+
+async function imageToChatter() {
+  const pass = document.getElementById("iPass").value;
+  const flavor = document.querySelector('input[name="iMode"]:checked').value;
+  if (!secretImgFile) { setStatus("imageStatus", "Pick an image first.", "warn"); return; }
+  if (!pass) { setStatus("imageStatus", "Set a password.", "warn"); return; }
+
+  setStatus("imageStatus", "Encrypting image…");
+  try {
+    const bytes = await fileToBytes(secretImgFile);
+    const payload = packImage(secretImgFile.type || "image/png", bytes);
+    const packed = await encryptBytes(payload, pass);
+    document.getElementById("imgChatter").value = await packedToChatter(packed, flavor);
+    setStatus("imageStatus", "Disguised. Copy it and send it.", "ok");
+  } catch (err) {
+    setStatus("imageStatus", "Something went wrong: " + err.message, "warn");
+  }
+}
+
+/* ---------------------------------------------------------------- *
+ * Image-in-image (steganography) tab
+ * ---------------------------------------------------------------- */
+
+let coverImageData = null;
+let coverImageEl = null; // the original loaded <img>, kept so we can redraw it larger without compounding blur
+let revealImageData = null;
+let secretImgForStegoFile = null;
+const MAX_STEGO_DIM = 3000; // cap on upscaled width/height so a tiny image + huge secret can't eat all your memory
+
+document.querySelectorAll('input[name="sType"]').forEach(r => {
+  r.addEventListener("change", () => {
+    const v = document.querySelector('input[name="sType"]:checked').value;
+    document.getElementById("stextWrap").style.display = v === "text" ? "block" : "none";
+    document.getElementById("simgWrap").style.display = v === "image" ? "block" : "none";
+  });
+});
+
+function loadImageFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve(img); URL.revokeObjectURL(url); };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
+wireDropzone("coverDrop", "cover", async file => {
+  setStatus("hideStatus", "Loading cover image…");
+  try {
+    const img = await loadImageFile(file);
+    coverImageEl = img;
+    const canvas = document.getElementById("canvas");
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    coverImageData = flattenImageDataToOpaque(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    ctx.putImageData(coverImageData, 0, 0);
+    const preview = document.getElementById("coverPreview");
+    preview.src = canvas.toDataURL("image/png");
+    preview.style.display = "block";
+    const capacity = stegoCapacityBytes(coverImageData);
+    document.getElementById("capacityInfo").textContent =
+      `Capacity: about ${capacity.toLocaleString()} bytes (${img.width}×${img.height}px).`;
+    document.getElementById("capacityInfo").className = "capacity";
+    setStatus("hideStatus", "Cover image loaded.", "ok");
+  } catch {
+    setStatus("hideStatus", "Couldn't load that image.", "warn");
+  }
+});
+
+wireDropzone("simgDrop", "simg", file => {
+  secretImgForStegoFile = file;
+  document.getElementById("simgInfo").textContent =
+    `${file.name} (${(file.size / 1024).toFixed(1)} KB, ${file.type || "unknown type"})`;
+});
+
+wireDropzone("revealDrop", "revealImg", async file => {
+  setStatus("revealStatus", "Loading image…");
+  try {
+    const img = await loadImageFile(file);
+    const c = document.createElement("canvas");
+    c.width = img.width; c.height = img.height;
+    const ctx = c.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    revealImageData = ctx.getImageData(0, 0, c.width, c.height);
+    setStatus("revealStatus", "Image loaded. Enter the password and reveal.", "ok");
+  } catch {
+    setStatus("revealStatus", "Couldn't load that image.", "warn");
+  }
+});
+
+// Redraws the original cover image at a larger size using the canvas's
+// built-in scaling (cheap — no manual pixel math), so it has enough pixels
+// to hold the payload. Returns the new capacity in bytes, or 0 if it can't
+// get there even at the size cap.
+function upscaleCoverToFit(neededBytes) {
+  if (!coverImageEl) return 0;
+  const pixelsNeeded = Math.ceil((neededBytes * 8) / 3 * 1.1); // +10% margin, 3 writable RGB bytes per pixel
+  const scale = Math.sqrt(pixelsNeeded / (coverImageEl.width * coverImageEl.height));
+  const newW = Math.min(Math.ceil(coverImageEl.width * scale), MAX_STEGO_DIM);
+  const newH = Math.min(Math.ceil(coverImageEl.height * scale), MAX_STEGO_DIM);
+
+  const canvas = document.getElementById("canvas");
+  canvas.width = newW; canvas.height = newH;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(coverImageEl, 0, 0, newW, newH);
+  coverImageData = flattenImageDataToOpaque(ctx.getImageData(0, 0, newW, newH));
+  ctx.putImageData(coverImageData, 0, 0);
+
+  const preview = document.getElementById("coverPreview");
+  preview.src = canvas.toDataURL("image/png");
+  preview.style.display = "block";
+
+  const newCapacity = stegoCapacityBytes(coverImageData);
+  document.getElementById("capacityInfo").textContent =
+    `Upscaled to ${newW}×${newH}px to fit the payload (capacity now ${newCapacity.toLocaleString()} bytes).`;
+  return stegoTotalCapacityBytes(coverImageData);
+}
+
+async function stegoHide() {
+  if (!coverImageData) { setStatus("hideStatus", "Load a cover image first.", "warn"); return; }
+  const pass = document.getElementById("sPass").value;
+  if (!pass) { setStatus("hideStatus", "Set a password.", "warn"); return; }
+
+  const type = document.querySelector('input[name="sType"]:checked').value;
+  let payload, kind;
+  if (type === "text") {
+    const txt = document.getElementById("stext").value;
+    if (!txt.trim()) { setStatus("hideStatus", "Write some text to hide.", "warn"); return; }
+    payload = enc.encode(txt);
+    kind = 0;
+  } else {
+    if (!secretImgForStegoFile) { setStatus("hideStatus", "Pick a secret image.", "warn"); return; }
+    const bytes = await fileToBytes(secretImgForStegoFile);
+    payload = packImage(secretImgForStegoFile.type || "image/png", bytes);
+    kind = 1;
+  }
+
+  setStatus("hideStatus", "Encrypting and embedding…");
+  try {
+    const packed = await encryptBytes(payload, pass);
+    const header = new Uint8Array(STEGO_HEADER_BYTES);
+    header.set(STEGO_MAGIC, 0);
+    header[4] = kind;
+    new DataView(header.buffer).setUint32(5, packed.length, false);
+    const full = concatBytes(header, packed);
+
+    let capacity = stegoTotalCapacityBytes(coverImageData);
+    let upscaled = false;
+    if (full.length > capacity) {
+      capacity = upscaleCoverToFit(full.length);
+      upscaled = true;
+      if (full.length > capacity) {
+        setStatus("hideStatus",
+          `Too big even at ${MAX_STEGO_DIM}×${MAX_STEGO_DIM}px: this needs ` +
+          `${full.length.toLocaleString()} bytes but the largest upscale only holds ` +
+          `${capacity.toLocaleString()}. Try a smaller secret.`, "warn");
+        return;
+      }
+    }
+
+    writeBitsIntoImage(coverImageData, full);
+    const canvas = document.getElementById("canvas");
+    canvas.getContext("2d").putImageData(coverImageData, 0, 0);
+    const preview = document.getElementById("coverPreview");
+    preview.src = canvas.toDataURL("image/png");
+    preview.style.display = "block";
+    document.getElementById("dlCoverBtn").style.display = "inline-block";
+    setStatus("hideStatus",
+      (upscaled ? `Upscaled the cover image to fit, then hid ` : `Hid `) +
+      `${full.length.toLocaleString()} bytes. Download the PNG and send that file.`, "ok");
+  } catch (err) {
+    setStatus("hideStatus", "Something went wrong: " + err.message, "warn");
+  }
+}
+
+function downloadCoverPng() {
+  const canvas = document.getElementById("canvas");
+  const a = document.createElement("a");
+  a.href = canvas.toDataURL("image/png");
+  a.download = "veil.png";
+  a.click();
+}
+
+async function stegoReveal() {
+  if (!revealImageData) { setStatus("revealStatus", "Load the image first.", "warn"); return; }
+  const pass = document.getElementById("rPass").value;
+  if (!pass) { setStatus("revealStatus", "Enter the password.", "warn"); return; }
+
+  const revealedEl = document.getElementById("revealedImg");
+  const dlBtn = document.getElementById("dlRevealBtn");
+  revealedEl.style.display = "none";
+  dlBtn.style.display = "none";
+
+  const maxCapacity = stegoTotalCapacityBytes(revealImageData);
+  if (maxCapacity < 9) { setStatus("revealStatus", "Image too small to contain anything.", "warn"); return; }
+
+  const header = readBitsFromImage(revealImageData, 9);
+  if (header[0] !== 0x53 || header[1] !== 0x54 || header[2] !== 0x45 || header[3] !== 0x47) {
+    setStatus("revealStatus", "No hidden payload found in this image.", "warn");
+    return;
+  }
+  const kind = header[4];
+  const len = new DataView(header.buffer).getUint32(5, false);
+  if (len < 16 + 12 + TAG_BITS / 8 || 9 + len > maxCapacity) {
+    setStatus("revealStatus", "The payload length looks corrupted.", "warn");
+    return;
+  }
+
+  setStatus("revealStatus", "Decrypting…");
+  try {
+    const total = readBitsFromImage(revealImageData, 9 + len);
+    const packed = total.slice(9);
+    const pt = await decryptBytes(packed, pass);
+
+    if (kind === 0) {
+      setStatus("revealStatus", dec.decode(pt), "ok");
+    } else {
+      const img = unpackImage(pt);
+      if (!img) { setStatus("revealStatus", "Decoded bytes aren't a valid image.", "warn"); return; }
+      const url = trackUrl(URL.createObjectURL(new Blob([img.data], { type: img.mime })));
+      revealedEl.src = url;
+      revealedEl.style.display = "block";
+      dlBtn.style.display = "inline-block";
+      dlBtn.dataset.url = url;
+      dlBtn.dataset.mime = img.mime;
+      setStatus("revealStatus", `Revealed an image (${img.mime}, ${img.data.length.toLocaleString()} bytes).`, "ok");
+    }
+  } catch {
+    setStatus("revealStatus", "Wrong password.", "warn");
+  }
+}
+function downloadRevealedImg() {
+  const btn = document.getElementById("dlRevealBtn");
+  const ext = (btn.dataset.mime || "image/png").split("/")[1] || "png";
+  const a = document.createElement("a");
+  a.href = btn.dataset.url;
+  a.download = "revealed." + ext;
+  a.click();
+}
+
+/* ---------------------------------------------------------------- *
+ * Wipe / theme
+ * ---------------------------------------------------------------- */
+
+function wipeAll() {
+  ["secret", "wPass", "disguised", "incoming", "dPass", "iPass", "imgChatter",
+   "stext", "sPass", "rPass"].forEach(id => { document.getElementById(id).value = ""; });
+  revokeAllUrls();
+  secretImgFile = null;
+  secretImgForStegoFile = null;
+  coverImageData = null;
+  coverImageEl = null;
+  revealImageData = null;
+  document.getElementById("secretImgInfo").textContent = "";
+  document.getElementById("simgInfo").textContent = "";
+  document.getElementById("capacityInfo").textContent = "";
+  ["decodedImg", "revealedImg", "coverPreview"].forEach(id => {
+    const el = document.getElementById(id); el.style.display = "none"; el.src = "";
+  });
+  ["decodedImgDl", "dlRevealBtn", "dlCoverBtn"].forEach(id => {
+    document.getElementById(id).style.display = "none";
+  });
+  ["writeStatus", "decodeStatus", "imageStatus", "hideStatus", "revealStatus"].forEach(id =>
+    setStatus(id, "Wiped.", "idle"));
+  toast("Everything wiped");
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute("data-theme");
+  const next = cur === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  try { localStorage.setItem("veil-theme", next); } catch {}
+}
+(function initTheme() {
+  try {
+    const saved = localStorage.getItem("veil-theme");
+    if (saved) document.documentElement.setAttribute("data-theme", saved);
+  } catch {}
+})();
+</script>
+</body>
+</html>
