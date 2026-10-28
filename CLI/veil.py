@@ -10,6 +10,8 @@ from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
 from PIL import Image
 
+VERSION = "1.0.0"
+
 # --- 1. CRYPTO ---
 TAG_BYTES = 12  # 96-bit auth tag
 
@@ -414,3 +416,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print(f"\n{Colors.WARNING}Exiting Veil...{Colors.ENDC}")
         sys.exit(0)
+    except Exception as e:
+        print(f"\n{Colors.FAIL}Error: {e}{Colors.ENDC}")
+        sys.exit(1)
